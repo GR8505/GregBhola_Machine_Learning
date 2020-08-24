@@ -1,35 +1,4 @@
-// function init() {
-//     data = [{
-//       x: [1, 2, 3, 4, 5],
-//       y: [1, 2, 4, 8, 16] }];
-//     Plotly.newPlot("plot", data);
-//   };
-  
-//   d3.selectAll("#dropdownMenu").on("change", updatePlotly);
-//   function updatePlotly() {
-//     var dropdownMenu = d3.select("#dropdownMenu");
-//     var dataset = dropdownMenu.property("value");
-  
-//     var xData = [1, 2, 3, 4, 5];
-//     var yData = [];
-  
-//     if (dataset === 'dataset1') {
-//       yData = [1, 2, 4, 8, 16];
-//     };
-  
-//     if (dataset === 'dataset2') {
-//       yData = [1, 10, 100, 1000, 10000];
-//     };
-  
-//     var trace = {
-//       x: [xData],
-//       y: [yData],
-//     };
-//     Plotly.restyle("plot", trace);
-//   };
-  
-//   init();
-
+// Bellybutton Biodiveristy Dashboard
 function init() {
   var selector = d3.select("#selDataset");
 
@@ -46,7 +15,7 @@ function init() {
 
 init();
 
-//Building buildMetadata () function
+// Building buildMetadata () function
 function buildMetadata(sample) {
   d3.json("samples.json").then((data) => {
     var metadata = data.metadata;
@@ -65,7 +34,81 @@ function buildMetadata(sample) {
   });
 }
 
+
+
+// Building buildCharts () function
+function buildCharts(sample) {
+  d3.json("samples.json").then((data) => {
+    var samples = data.samples;
+    var resultArray = samples.filter(sampleObj => sampleObj.id == sample);
+    var sortedSamples = resultArray[0];
+    var topTen = sortedSamples.sample_values.slice(0, 10).reverse();
+    var topIDS = sortedSamples.otu_labels.slice(0, 10).reverse();
+
+
+    var trace = {
+      x: topTen,
+      y: topIDS,
+      type: "bar",
+      orientation: "h"
+    };
+
+
+    var data = [trace];
+    
+    var layout = {
+    title: "Top Ten Bacteria",
+    width:1200,
+    height:600,
+    // xaxis: { title: "Ba" },
+    yaxis: { title: "Bacteria"}
+    };
+
+    Plotly.newPlot("bar", data, layout);
+
+  });
+}
+
+// Building buildBubble function ()
+function buildBubble(sample) {
+  d3.json("samples.json").then((data) => {
+    var samples = data.samples;
+    var resultArray = samples.filter(sampleObj => sampleObj.id == sample);
+    var sortedSamples = resultArray[0];
+    var sampleValues = sortedSamples.sample_values;
+    var otuIDS = sortedSamples.otu_ids;
+    var otuLabels = sortedSamples.otu_labels;
+    
+    var trace1 = {
+      x: otuIDS,
+      y: sampleValues,
+      text: otuLabels,
+      mode: 'markers',
+      marker: {
+        size: sampleValues
+      }
+    };
+    
+    var data = [trace1];
+    
+    var layout = {
+      title: 'Marker Size',
+      showlegend: false,
+      height: 600,
+      width: 1200,
+      xaxis:{title: "OTU ID"}
+    };
+    
+    Plotly.newPlot('bubble', data, layout);
+
+
+  });
+}
+
+
 function optionChanged(newSample) {
   buildMetadata(newSample);
   buildCharts(newSample);
+  buildBubble(newSample);
 }
+
